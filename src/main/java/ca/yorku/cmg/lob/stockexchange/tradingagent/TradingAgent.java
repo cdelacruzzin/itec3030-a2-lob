@@ -1,17 +1,25 @@
 package ca.yorku.cmg.lob.stockexchange.tradingagent;
 
+import ca.yorku.cmg.lob.orderbook.Ask;
+import ca.yorku.cmg.lob.orderbook.Bid;
 import ca.yorku.cmg.lob.stockexchange.StockExchange;
+import ca.yorku.cmg.lob.stockexchange.events.BadNews;
 import ca.yorku.cmg.lob.stockexchange.events.Event;
+import ca.yorku.cmg.lob.stockexchange.events.GoodNews;
 import ca.yorku.cmg.lob.stockexchange.events.NewsBoard;
 import ca.yorku.cmg.lob.trader.Trader;
+import ca.yorku.cmg.lob.tradestandards.IOrder;
 
 /**
  * An trading agent that receives news and reacts by submitting ask or bid orders.
  */
-public abstract class TradingAgent {
+public abstract class TradingAgent{
 	protected Trader t;
 	protected StockExchange exc;
 	protected NewsBoard news;
+
+	private ITradingStrategy strategy;
+
 	
 	/**
 	 * Constructor
@@ -38,9 +46,11 @@ public abstract class TradingAgent {
 	 * @param e The {@linkplain Event} object in question
 	 */
 	private void examineEvent(Event e) {
+
+
 		int positionInSecurity = exc.getAccounts().getTraderAccount(t).getPosition(e.getSecrity().getTicker());
 		if (positionInSecurity > 0) {
-			actOnEvent(e,positionInSecurity,exc.getPrice(e.getSecrity().getTicker()));
+			strategy.actOnEvent(e,positionInSecurity,exc.getPrice(e.getSecrity().getTicker()));
 		}
 	}
 
@@ -58,15 +68,16 @@ public abstract class TradingAgent {
 	}
 	
 	
-	/**
-	 * Act in response to a news {@linkplain Event}. Exact reaction strategy to be implemented by specialized agents.
-	 * @param e The {@linkplain Event} in question
-	 * @param pos The position (number of units) of the trader to the ticker that is mentioned in the Event.
-	 * @param price The current price of the relevant ticker. 
-	 */
-	protected abstract void actOnEvent(Event e, int pos, int price);
-	
-	
-	
+//	/**
+//	 * Act in response to a news {@linkplain Event}. Exact reaction strategy to be implemented by specialized agents.
+//	 * @param e The {@linkplain Event} in question
+//	 * @param pos The position (number of units) of the trader to the ticker that is mentioned in the Event.
+//	 * @param price The current price of the relevant ticker.
+//	 */
+//	 protected abstract void actOnEvent(Event e, int pos, int price);
 
+
+	public void setStrategy (ITradingStrategy s) {
+		this.strategy = s;
+	}
 }

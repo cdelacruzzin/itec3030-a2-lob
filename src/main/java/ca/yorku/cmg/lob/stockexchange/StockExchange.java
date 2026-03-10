@@ -14,9 +14,7 @@ import ca.yorku.cmg.lob.orderbook.Trade;
 import ca.yorku.cmg.lob.security.Security;
 import ca.yorku.cmg.lob.security.SecurityList;
 import ca.yorku.cmg.lob.stockexchange.events.NewsBoard;
-import ca.yorku.cmg.lob.stockexchange.tradingagent.TradingAgent;
-import ca.yorku.cmg.lob.stockexchange.tradingagent.TradingAgentAggressive;
-import ca.yorku.cmg.lob.stockexchange.tradingagent.TradingAgentConservative;
+import ca.yorku.cmg.lob.stockexchange.tradingagent.*;
 import ca.yorku.cmg.lob.trader.Trader;
 import ca.yorku.cmg.lob.trader.TraderInstitutional;
 import ca.yorku.cmg.lob.trader.TraderRetail;
@@ -173,21 +171,32 @@ public class StockExchange {
 	                    long initBalance = Long.parseLong(parts[3].trim());
 	                    String tradingStyle = parts[4].trim();
 	                	Trader t;
+
 	                    if (traderType.equals("Retail")) {
 	                    	t = new TraderRetail(traderTitle);
 	                    } else {
 	                    	t = new TraderInstitutional(traderTitle);
 	                    }
-	                    if (accType.equals("Basic")) {
-	                    	accounts.addAccount(new AccountBasic(t,initBalance));
-	                    } else {
-	                    	accounts.addAccount(new AccountPro(t,initBalance));
-	                    }
-	                    if (tradingStyle.equals("Conservative")) {
-	                    	traders.add(new TradingAgentConservative(t,this,newsDesk));
-	                    } else {
-	                    	traders.add(new TradingAgentAggressive(t,this,newsDesk));
-	                    }
+						if (accType.equals("Basic")) {
+							accounts.addAccount(new AccountBasic(t,initBalance));
+						} else {
+							accounts.addAccount(new AccountPro(t,initBalance));
+						}
+						AbstractTradingAgentFactory factory = new TradingAgentFactory();
+						TradingAgent agent = factory.createAgent(traderType, tradingStyle, t, this, newsDesk);
+
+
+
+
+						traders.add(agent);
+
+
+
+//	                    if (tradingStyle.equals("Conservative")) {
+//	                    	traders.add(new TradingAgentConservative(t,this,newsDesk));
+//	                    } else {
+//	                    	traders.add(new TradingAgentAggressive(t,this,newsDesk));
+//	                    }
 	                    
 	                } else {
 	                    System.err.println("Skipping malformed line (two few attributes): " + line);
@@ -358,7 +367,7 @@ public class StockExchange {
 	    /**
 	     * Retrieves the list of securities managed by the exchange.
 	     * 
-	     * @return the {@linkplain ca.yorku.cmg.lob.security.SecurityList} object
+	     * @return the {@linkplain SecurityList} object
 	     */
 		public SecurityList getSecurities() {
 			return securities;
