@@ -3,23 +3,25 @@ package ca.yorku.cmg.lob.stockexchange.events;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.PriorityQueue;
-import java.util.Set;
+import java.util.*;
 
 import ca.yorku.cmg.lob.security.Security;
 import ca.yorku.cmg.lob.security.SecurityList;
+import ca.yorku.cmg.lob.stockexchange.tradingagent.INewsBoard;
+import ca.yorku.cmg.lob.stockexchange.tradingagent.TradingAgent;
 
 /**
  * A NewsBoard object generates and shares financial/economic events that affect specific securities 
  */
-public class NewsBoard {
+public class NewsBoard implements INewsBoard {
 
 	//Events are queued ordered by time
 	PriorityQueue<Event> eventQueue = new PriorityQueue<>((e1, e2) -> Long.compare(e1.getTime(), e2.getTime()));
 
+
 	SecurityList securities;
+
+	ArrayList<TradingAgent> registeredAgent = new ArrayList<>();
 	
 	public NewsBoard(SecurityList x) {
 		this.securities = x;
@@ -110,12 +112,29 @@ public class NewsBoard {
 		}
 		return (e);
 	}
-	
-	
+
+
+	@Override
+	public void registerObserver(TradingAgent agent) {
+		registeredAgent.add(agent);
+
+
+	}
+
 	/**
 	 * Stub for the observer part. Runs the entire queue of events and sends notifications to registered trading agents.   
 	 */
 	public void runEventsList() {
+
+			for (int i = 0; i <= 30; i++) {
+				Event e = getEventAt(i);
+				if (e != null) {
+					for (TradingAgent agent: registeredAgent){
+					agent.update(e);
+					}
+				}
+
+			}
 
 	}
 	
